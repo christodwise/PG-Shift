@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PG Shift ⚡
 
-## Getting Started
+**Drop. Dump. Restore. Done.**
 
-First, run the development server:
+A modern, agentic PostgreSQL database migration tool with a beautiful web interface.
+
+## Features
+
+- 🛡️ **Safe Mode** - Preflight checks & version validation
+- ⚡ **Live Stats** - Real-time table & row analysis
+- 🤖 **Agent Ready** - Structured logs & clear visual states
+- 🔄 **Smart Workflow** - Guided 4-step wizard interface
+- 💾 **Connection Manager** - Save & reuse database profiles
+- ⚠️ **Safety First** - Explicit confirmations for destructive operations
+
+## Quick Start
+
+### Docker (Recommended)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Using Docker Compose
+docker-compose up -d
+
+# Or build and run manually
+docker build -t pg-shift .
+docker run -p 8501:8501 -v $(pwd)/data:/app/data pg-shift
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Access the app at: http://localhost:8501
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Local Installation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Install dependencies
+pip install -r requirements.txt
 
-## Learn More
+# Run the app
+streamlit run app.py
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Prerequisites
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **PostgreSQL Client Tools** (`pg_dump`, `pg_restore`)
+  - macOS: `brew install postgresql`
+  - Ubuntu/Debian: `apt-get install postgresql-client`
+  - Docker: Already included in the image
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## How It Works
 
-## Deploy on Vercel
+1. **Configure Source** - Connect to your source PostgreSQL database
+2. **Configure Target** - Set up the destination database
+3. **Review & Confirm** - Check preflight validations
+4. **Execute Migration** - Watch live progress with structured logs
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Migration Process
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Uses `pg_dump` (custom format) for source backup
+- Drops all existing public tables in target database
+- Restores using `pg_restore`
+- Live logging throughout the process
+
+## Safety Features
+
+- Version compatibility checking
+- Connection validation before migration
+- Explicit database name confirmation
+- Force/bypass option for advanced users
+- No password logging (uses `PGPASSWORD` environment variable)
+
+## Configuration
+
+Connection details are stored locally in `connections.db` (SQLite).
+
+## Made with ❤️ by Lifetrenz DevOps Team
