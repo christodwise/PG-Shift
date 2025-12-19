@@ -312,41 +312,11 @@ def add_connection_dialog():
 
 @st.dialog("⚙️ Manage Connections")
 def manage_connections_dialog():
-    # Initialize states if not present
-    if 'show_manage_dialog' not in st.session_state:
-        st.session_state.show_manage_dialog = False
-    if 'confirming_delete_conn' not in st.session_state:
-        st.session_state.confirming_delete_conn = None
-    
-    # --- PHASE 2: Confirmation Overlay ---
-    if st.session_state.confirming_delete_conn:
-        c = st.session_state.confirming_delete_conn
-        st.error(f"⚠️ **Confirm Deletion**")
-        st.write(f"Are you sure you want to permanently delete the connection profile for **'{c['name']}'**?")
-        st.info(f"Details: {c['user']}@{c['host']}/{c['dbname']}")
-        
-        col1, col2 = st.columns(2)
-        if col1.button("❌ No, Cancel", key="abort_delete", use_container_width=True):
-            st.session_state.confirming_delete_conn = None
-            st.rerun()
-        if col2.button("🗑️ Yes, Delete", key="final_delete", type="primary", use_container_width=True):
-            storage.delete_connection(c['id'])
-            st.session_state.confirming_delete_conn = None
-            # Do NOT reset show_manage_dialog here if you want to stay in the dialog after delete,
-            # but usually it's better to refresh the list or close it. 
-            # Let's refresh the list.
-            st.rerun()
-        return
-
-    # --- PHASE 1: Connection List ---
     st.write("View and remove valid connection profiles.")
     conns = storage.get_connections()
     
     if not conns:
         st.info("No connections saved.")
-        if st.button("Close Window", use_container_width=True):
-            st.session_state.show_manage_dialog = False
-            st.rerun()
         return
 
     for c in conns:
@@ -357,13 +327,9 @@ def manage_connections_dialog():
             st.caption(f"{c['user']}@{c['host']}/{c['dbname']}")
         with c2:
             if st.button("🗑️", key=f"del_btn_{c['id']}", help=f"Delete {c['name']}"):
-                st.session_state.confirming_delete_conn = c
+                storage.delete_connection(c['id'])
                 st.rerun()
         st.divider()
-    
-    if st.button("Done", use_container_width=True):
-        st.session_state.show_manage_dialog = False
-        st.rerun()
 
 with st.sidebar:
     st.markdown("""
@@ -393,11 +359,6 @@ with st.sidebar:
         add_connection_dialog()
     
     if st.button("⚙️ Manage Saved Connections", use_container_width=True):
-        st.session_state.show_manage_dialog = True
-        st.rerun()
-
-    # Call dialog if state is True
-    if st.session_state.get('show_manage_dialog', False):
         manage_connections_dialog()
     
     st.write("")
