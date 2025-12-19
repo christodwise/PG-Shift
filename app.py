@@ -319,31 +319,19 @@ def manage_connections_dialog():
         st.info("No connections saved.")
         return
 
-    if 'pending_delete_id' not in st.session_state:
-        st.session_state.pending_delete_id = None
-
     for c in conns:
-        if st.session_state.pending_delete_id == c['id']:
-            with st.container(border=True):
-                st.markdown(f"⚠️ **Delete '{c['name']}'?**")
-                st.write("This action cannot be undone.")
-                c_confirm, c_cancel = st.columns(2)
-                if c_confirm.button("Yes, Delete", key=f"conf_{c['id']}", type="primary", use_container_width=True):
+        c1, c2 = st.columns([4, 1])
+        with c1:
+            env_label = c.get('environment', 'Production')
+            st.markdown(f"**{c['name']}** 🏷️ _{env_label}_")
+            st.caption(f"{c['user']}@{c['host']}/{c['dbname']}")
+        with c2:
+            # Use popover for in-place confirmation
+            with st.popover("🗑️", help="Delete connection", use_container_width=True):
+                st.warning("Are you sure?")
+                st.write(f"Delete '{c['name']}' permanently?")
+                if st.button("Confirm Delete", key=f"conf_del_{c['id']}", type="primary", use_container_width=True):
                     storage.delete_connection(c['id'])
-                    st.session_state.pending_delete_id = None
-                    st.rerun()
-                if c_cancel.button("Cancel", key=f"can_{c['id']}", use_container_width=True):
-                    st.session_state.pending_delete_id = None
-                    st.rerun()
-        else:
-            c1, c2 = st.columns([4, 1])
-            with c1:
-                env_label = c.get('environment', 'Production')
-                st.markdown(f"**{c['name']}** 🏷️ _{env_label}_")
-                st.caption(f"{c['user']}@{c['host']}/{c['dbname']}")
-            with c2:
-                if st.button("🗑️", key=f"del_{c['id']}", help="Delete connection"):
-                    st.session_state.pending_delete_id = c['id']
                     st.rerun()
         st.divider()
 
