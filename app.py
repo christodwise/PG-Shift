@@ -312,6 +312,28 @@ def add_connection_dialog():
 
 @st.dialog("⚙️ Manage Connections")
 def manage_connections_dialog():
+    if 'confirming_delete_conn' not in st.session_state:
+        st.session_state.confirming_delete_conn = None
+    
+    # --- PHASE 2: Confirmation Overlay ---
+    if st.session_state.confirming_delete_conn:
+        c = st.session_state.confirming_delete_conn
+        st.error(f"⚠️ **Confirm Deletion**")
+        st.write(f"Are you sure you want to permanently delete the connection profile for **'{c['name']}'**?")
+        st.info(f"Details: {c['user']}@{c['host']}/{c['dbname']}")
+        
+        col1, col2 = st.columns(2)
+        if col1.button("❌ No, Cancel", use_container_width=True):
+            st.session_state.confirming_delete_conn = None
+            st.rerun()
+        if col2.button("🗑️ Yes, Delete", type="primary", use_container_width=True):
+            storage.delete_connection(c['id'])
+            st.session_state.confirming_delete_conn = None
+            st.success(f"Deleted '{c['name']}'")
+            st.rerun()
+        return
+
+    # --- PHASE 1: Connection List ---
     st.write("View and remove valid connection profiles.")
     conns = storage.get_connections()
     
@@ -326,13 +348,9 @@ def manage_connections_dialog():
             st.markdown(f"**{c['name']}** 🏷️ _{env_label}_")
             st.caption(f"{c['user']}@{c['host']}/{c['dbname']}")
         with c2:
-            # Use popover for in-place confirmation
-            with st.popover("🗑️", help="Delete connection", use_container_width=True):
-                st.warning("Are you sure?")
-                st.write(f"Delete '{c['name']}' permanently?")
-                if st.button("Confirm Delete", key=f"conf_del_{c['id']}", type="primary", use_container_width=True):
-                    storage.delete_connection(c['id'])
-                    st.rerun()
+            if st.button("🗑️", key=f"del_btn_{c['id']}", help=f"Delete {c['name']}"):
+                st.session_state.confirming_delete_conn = c
+                st.rerun()
         st.divider()
 
 with st.sidebar:
