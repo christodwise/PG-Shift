@@ -6,6 +6,7 @@ A modern, agentic PostgreSQL database migration tool with a beautiful web interf
 
 ## Features
 
+- 🔐 **Secure Access** - Admin authentication required
 - 🛡️ **Safe Mode** - Preflight checks & version validation
 - ⚡ **Live Stats** - Real-time table & row analysis
 - 🤖 **Agent Ready** - Structured logs & clear visual states
@@ -14,6 +15,10 @@ A modern, agentic PostgreSQL database migration tool with a beautiful web interf
 - ⚠️ **Safety First** - Explicit confirmations for destructive operations
 
 ## Quick Start
+
+### Default Login Credentials
+- **Username**: `admin`
+- **Password**: `admin123`
 
 ### Docker (Recommended)
 
@@ -47,10 +52,12 @@ streamlit run app.py
 
 ## How It Works
 
-1. **Configure Source** - Connect to your source PostgreSQL database
-2. **Configure Target** - Set up the destination database
-3. **Review & Confirm** - Check preflight validations
-4. **Execute Migration** - Watch live progress with structured logs
+1. **Login** - Authenticate with admin credentials
+2. **Configure Source** - Connect to your source PostgreSQL database
+3. **Configure Target** - Set up the destination database
+4. **Review & Confirm** - Check preflight validations
+5. **Execute Migration** - Watch live progress with structured logs
+6. **Return Home** - Easy navigation back to start after completion
 
 ## Migration Process
 
@@ -61,11 +68,18 @@ streamlit run app.py
 
 ## Safety Features
 
+- Password-protected admin access
 - Version compatibility checking
 - Connection validation before migration
 - Explicit database name confirmation
 - Force/bypass option for advanced users
 - No password logging (uses `PGPASSWORD` environment variable)
+
+## Security
+
+- Admin credentials use SHA-256 password hashing
+- Default password should be changed in production
+- To change password, modify `ADMIN_PASSWORD_HASH` in `app.py`
 
 ## Configuration
 

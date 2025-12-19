@@ -5,6 +5,7 @@ import time
 import json
 import requests
 from streamlit_lottie import st_lottie
+import hashlib
 
 # Page Configuration
 st.set_page_config(
@@ -12,6 +13,62 @@ st.set_page_config(
     page_icon="⚡", 
     layout="centered"
 )
+
+# --- Authentication Configuration ---
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD_HASH = hashlib.sha256("admin123".encode()).hexdigest()  # Default: admin123
+
+def check_password(username, password):
+    """Verify username and password"""
+    if username == ADMIN_USERNAME:
+        password_hash = hashlib.sha256(password.encode()).hexdigest()
+        return password_hash == ADMIN_PASSWORD_HASH
+    return False
+
+def show_login_page():
+    """Display login page"""
+    st.write("")
+    st.write("")
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown("""
+            <div style='text-align: center;'>
+                <h1 style='font-size: 3rem; font-weight: 900; color: #1e3a8a; margin-bottom: 10px;'>
+                    🔐 PG Shift
+                </h1>
+                <p style='color: #64748b; margin-bottom: 2rem;'>Admin Access Required</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        with st.form("login_form"):
+            username = st.text_input("Username", placeholder="admin")
+            password = st.text_input("Password", type="password", placeholder="Enter password")
+            submit = st.form_submit_button("🚀 Login", use_container_width=True)
+            
+            if submit:
+                if check_password(username, password):
+                    st.session_state.authenticated = True
+                    st.session_state.username = username
+                    st.rerun()
+                else:
+                    st.error("❌ Invalid credentials")
+        
+        st.markdown("""
+            <div style='text-align: center; margin-top: 3rem; color: #a0aec0; font-size: 0.85rem;'>
+                <p>Default credentials: admin / admin123</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+# Initialize authentication state
+if 'authenticated' not in st.session_state:
+    st.session_state.authenticated = False
+
+# Show login page if not authenticated
+if not st.session_state.authenticated:
+    show_login_page()
+    st.stop()
+
 
 # --- Animations ---
 def load_lottieurl(url: str):
@@ -526,9 +583,23 @@ def step_4_execute():
                             Check logs below for details.
                         </div>
                     """, unsafe_allow_html=True)
+                    
+                    # Back to Home button
+                    st.write("")
+                    if st.button("🏠 Back to Home", type="primary", use_container_width=True):
+                        st.session_state.step = 1
+                        st.session_state.logs = []
+                        st.rerun()
                 else:
                     status.update(label="Failed", state="error", expanded=True)
                     st.error(msg)
+                    
+                    # Back to Home button for failed migrations too
+                    st.write("")
+                    if st.button("🏠 Back to Home", type="secondary", use_container_width=True):
+                        st.session_state.step = 1
+                        st.session_state.logs = []
+                        st.rerun()
             
             with st.expander("View Logs"):
                 st.code("\n".join(st.session_state.logs))
