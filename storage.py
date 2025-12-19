@@ -1,7 +1,12 @@
 import sqlite3
 import os
 
-DB_FILE = 'connections.db'
+# Ensure data directory exists
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+os.makedirs(DATA_DIR, exist_ok=True)
+
+# Database path in data directory for Docker volume persistence
+DB_FILE = os.path.join(DATA_DIR, 'connections.db')
 
 def init_db():
     conn = sqlite3.connect(DB_FILE)

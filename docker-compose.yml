@@ -7,6 +7,7 @@ services:
     ports:
       - "8501:8501"
     volumes:
+      # Persist SQLite database and other data
       - ./data:/app/data
     environment:
       - STREAMLIT_SERVER_HEADLESS=true

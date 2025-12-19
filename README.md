@@ -33,6 +33,8 @@ docker run -p 8501:8501 -v $(pwd)/data:/app/data pg-shift
 
 Access the app at: http://localhost:8501
 
+**Data Persistence**: Saved database connections are stored in `./data/connections.db` and persist across container restarts.
+
 ### Local Installation
 
 ```bash
@@ -81,8 +83,10 @@ streamlit run app.py
 - Default password should be changed in production
 - To change password, modify `ADMIN_PASSWORD_HASH` in `app.py`
 
-## Configuration
+## Data Storage
 
-Connection details are stored locally in `connections.db` (SQLite).
+- **Connection Profiles**: Stored in `data/connections.db` (SQLite)
+- **Docker Volume**: `./data` directory is mounted to persist data
+- **Backup Recommendation**: Regularly backup the `data` directory
 
 ## Made with ❤️ by Lifetrenz DevOps Team
