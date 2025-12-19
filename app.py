@@ -183,12 +183,15 @@ with st.sidebar:
     # Display connections grouped by environment
     if grouped_connections:
         for env, connections in sorted(grouped_connections.items()):
-            with st.expander(f"🏷️ {env} ({len(connections)})", expanded=True):
+            with st.expander(f"🏷️ {env} ({len(connections)})", expanded=False):
                 for conn in connections:
                     st.markdown(f"""
-                        <div style='padding: 8px; background: #f8f9fa; border-radius: 6px; margin-bottom: 8px;'>
-                            <b>{conn['name']}</b><br>
-                            <small style='color: #6c757d;'>{conn['user']}@{conn['host']}:{conn['port']}/{conn['dbname']}</small>
+                        <div style='padding: 10px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);'>
+                            <div style='font-weight: 600; color: #1e293b; font-size: 0.9rem;'>{conn['name']}</div>
+                            <div style='color: #64748b; font-size: 0.75rem; font-family: monospace; margin-top: 2px;'>
+                                {conn['user']}@{conn['host']}<br>
+                                DB: {conn['dbname']}
+                            </div>
                         </div>
                     """, unsafe_allow_html=True)
 
@@ -606,9 +609,28 @@ def step_4_execute():
         st.error("Preflight checks failed.")
         can_proceed = st.checkbox("⚠️ Force / Proceed Anyway (Risky)", help="Bypass safety checks. Required if you know what you are doing (e.g. pg_dump version mismatch is acceptable).")
         
+    # --- Step 4: Execution Confirmation ---
+    st.markdown("#### 📋 Migration Summary")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown(f"""
+            <div style='padding: 15px; background: #f1f5f9; border-radius: 10px; border-left: 5px solid #667eea;'>
+                <small style='text-transform: uppercase; color: #64748b; font-weight: 700; font-size: 0.7rem;'>Source Database</small><br>
+                <div style='color: #1e293b; font-weight: 600;'>{st.session_state.source_conf.get('host')}</div>
+                <div style='color: #64748b; font-size: 0.8rem;'>DB: {st.session_state.source_conf.get('dbname')}</div>
+            </div>
+        """, unsafe_allow_html=True)
+    with c2:
+        st.markdown(f"""
+            <div style='padding: 15px; background: #fff7ed; border-radius: 10px; border-left: 5px solid #f97316;'>
+                <small style='text-transform: uppercase; color: #9a3412; font-weight: 700; font-size: 0.7rem;'>Target Database</small><br>
+                <div style='color: #1e293b; font-weight: 600;'>{st.session_state.target_conf.get('host')}</div>
+                <div style='color: #9a3412; font-size: 0.8rem;'>DB: {st.session_state.target_conf.get('dbname')}</div>
+            </div>
+        """, unsafe_allow_html=True)
+
     if can_proceed:
-        st.write("---")
-        st.markdown("#### 🚦 Ready to Migrate")
+        st.write("")
         if st.button("Start Migration Now", type="primary"):
             st.session_state.logs = []
             
