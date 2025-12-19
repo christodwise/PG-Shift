@@ -90,61 +90,227 @@ lottie_success = load_lottieurl("https://assets10.lottiefiles.com/packages/lf20_
 # Custom CSS & Animations
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
     
     html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
     
-    /* Button Gradients */
-    .stButton>button { 
-        width: 100%; 
-        border-radius: 8px; 
-        border: none;
-        transition: transform 0.2s, box-shadow 0.2s;
-        font-weight: 600;
-        height: 3rem;
-    }
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    
-    /* Primary Action */
-    div[data-testid="stVerticalBlock"] > div > div > div > div > button[kind="primary"] {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-    }
-    
-    /* Secondary Action */
-    div[data-testid="stVerticalBlock"] > div > div > div > div > button[kind="secondary"] {
-        background: white;
-        border: 1px solid #e2e8f0;
-        color: #2d3748;
+    .stApp {
+        background-color: #ffffff;
     }
 
-    /* Cards */
+    /* Card Styling */
     .step-card {
-        background: white;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(30, 58, 138, 0.08);
+        border: 1px solid rgba(191, 219, 254, 0.5); /* Subtle blue border */
         margin-bottom: 2rem;
-        border: 1px solid #edf2f7;
     }
     
-    .danger-box { padding: 15px; background-color: #fff5f5; border-left: 5px solid #e53e3e; color: #c53030; border-radius: 4px; }
-    .success-box { padding: 15px; background-color: #f0fff4; border-left: 5px solid #38a169; color: #2f855a; border-radius: 4px; }
+    /* Button Base - Blue Gradient Touch */
+    .stButton>button { 
+        width: 100%; 
+        border-radius: 10px; 
+        border: none !important;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white !important;
+        transition: all 0.3s ease;
+        font-weight: 700;
+        height: 3.2rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        box-shadow: 0 4px 6px rgba(37, 99, 235, 0.1);
+    }
+    .stButton>button:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 15px rgba(37, 99, 235, 0.25);
+        color: white !important;
+    }
+    
+    /* Primary Action Override (Deep Blue) */
+    div[data-testid="stVerticalBlock"] > div > div > div > div > button[kind="primary"] {
+        background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%) !important;
+        box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3) !important;
+    }
+    div[data-testid="stVerticalBlock"] > div > div > div > div > button[kind="primary"]:hover {
+        background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%) !important;
+    }
+    
+    /* Sidebar styling */
+    section[data-testid="stSidebar"] {
+        background-color: #f8fbff;
+        border-right: 1px solid #e1eefc;
+    }
+
+    .sidebar-logo {
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        border-radius: 16px;
+        text-align: center;
+        margin: 1rem 1rem 2rem 1rem;
+        box-shadow: 0 10px 25px rgba(30, 58, 138, 0.2);
+    }
+    .sidebar-logo h2 {
+        color: white !important;
+        font-weight: 800 !important;
+        letter-spacing: -1px !important;
+        margin-bottom: 0 !important;
+        font-size: 1.6rem !important;
+    }
+    .sidebar-logo p {
+        color: rgba(255,255,255,0.8) !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 1px !important;
+        text-transform: uppercase !important;
+        margin-top: 4px !important;
+    }
+
+    .connection-card {
+        padding: 12px 15px;
+        background: white;
+        border: 1px solid #e1e7f0;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .connection-card:hover {
+        border-color: #3b82f6;
+        box-shadow: 0 4px 8px rgba(30, 58, 138, 0.08);
+        transform: translateX(4px);
+    }
+    .env-tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+    
+    /* Sidebar Buttons - Blue Gradient */
+    .stSidebar [data-testid="stButton"] button {
+        border-radius: 10px !important;
+        border: none !important;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+        color: white !important;
+        font-size: 0.85rem !important;
+        height: 2.8rem !important;
+        transition: all 0.2s !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+    }
+    .stSidebar [data-testid="stButton"] button:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 12px rgba(37, 99, 235, 0.2) !important;
+    }
+    
+    /* Sidebar Primary (Green Gradient) */
+    .stSidebar [data-testid="stButton"] button[kind="primary"] {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+    }
+    .stSidebar [data-testid="stButton"] button[kind="primary"]:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+        box-shadow: 0 6px 15px rgba(5, 150, 105, 0.3) !important;
+    }
+
+    .danger-box { 
+        padding: 1.25rem; 
+        background-color: #fef2f2; 
+        border-left: 4px solid #ef4444; 
+        color: #991b1b; 
+        border-radius: 12px;
+        font-size: 0.9rem;
+        border: 1px solid #fee2e2;
+        border-left-width: 4px;
+    }
+    .success-box { 
+        padding: 1.25rem; 
+        background-color: #f0fdf4; 
+        border-left: 4px solid #22c55e; 
+        color: #166534; 
+        border-radius: 12px;
+        font-size: 0.9rem;
+        border: 1px solid #dcfce7;
+        border-left-width: 4px;
+    }
     
     /* Progress Bar */
     .stProgress > div > div > div > div {
-        background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-image: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    }
+
+    /* Checkbox Styling */
+    div[data-testid="stCheckbox"] {
+        background-color: #f0f7ff;
+        padding: 0.8rem 1rem;
+        border-radius: 12px;
+        border: 1px solid #dbeafe;
+        transition: all 0.3s ease;
+        margin: 1rem 0;
+    }
+    div[data-testid="stCheckbox"]:hover {
+        border-color: #3b82f6;
+        background-color: #ffffff;
+        box-shadow: 0 4px 12px rgba(30, 58, 138, 0.05);
+    }
+    div[data-testid="stCheckbox"] p {
+        color: #1e40af !important;
+        font-weight: 600 !important;
     }
     </style>
+    
+    <script>
+        // Auto-scroll to top helper
+        var mainContent = window.parent.document.querySelector('section.main');
+        if (mainContent) {
+            mainContent.scrollTo(0, 0);
+        }
+    </script>
 """, unsafe_allow_html=True)
 
 # --- Sidebar Manager ---
-@st.dialog("Manage Connections")
+@st.dialog("➕ Add New Connection")
+def add_connection_dialog():
+    st.write("Save a new connection profile for later use.")
+    with st.form("manual_add_form", border=False):
+        name = st.text_input("Profile Name", placeholder="e.g. Analytics DB")
+        env = st.selectbox("Environment", ["Production", "Staging", "Development", "QA", "UAT"])
+        
+        c1, c2 = st.columns(2)
+        host = c1.text_input("Host", placeholder="localhost")
+        port = c2.text_input("Port", value="5432")
+        
+        dbname = st.text_input("Database Name")
+        
+        c3, c4 = st.columns(2)
+        user = c3.text_input("Username", value="postgres")
+        password = c4.text_input("Password", type="password")
+        
+        st.write("")
+        if st.form_submit_button("💾 Save Connection", use_container_width=True):
+            if name and host and dbname and user:
+                success, msg = storage.save_connection(name, host, port, user, password, dbname, env)
+                if success:
+                    st.success(f"Connection '{name}' saved!")
+                    time.sleep(1)
+                    st.rerun()
+                else:
+                    st.error(msg)
+            else:
+                st.warning("Please fill in all required fields (Name, Host, DB, User).")
+
+@st.dialog("⚙️ Manage Connections")
 def manage_connections_dialog():
     st.write("View and remove valid connection profiles.")
     conns = storage.get_connections()
@@ -166,8 +332,22 @@ def manage_connections_dialog():
         st.divider()
 
 with st.sidebar:
-    if lottie_db_anim:
-        st_lottie(lottie_db_anim, height=150, key="sidebar_anim")
+    st.markdown("""
+        <div class='sidebar-logo'>
+            <h2 style='color: #1e40af; font-weight: 800; margin-bottom: 0;'>PG SHIFT</h2>
+            <p style='color: #64748b; font-size: 0.8rem; font-weight: 600;'>POSTGRESQL MIGRATION ENGINE</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<div style='margin-top: 1rem;'></div>", unsafe_allow_html=True)
+    
+    if st.button("🏠 Return to Home", use_container_width=True):
+        st.session_state.step = 1
+        st.session_state.logs = []
+        st.session_state.current_phase = "IDLE"
+        st.rerun()
+
+    st.markdown("<div style='margin-top: 1rem;'></div>", unsafe_allow_html=True)
     st.header("📂 Saved Connections")
     
     # Get connections grouped by environment
@@ -175,22 +355,36 @@ with st.sidebar:
     total_count = sum(len(conns) for conns in grouped_connections.values())
     st.caption(f"Found {total_count} profiles across {len(grouped_connections)} environments")
     
-    if st.button("Manage / Delete Connections", use_container_width=True):
+    if st.button("➕ Add New Connection", use_container_width=True, type="primary"):
+        add_connection_dialog()
+    
+    if st.button("⚙️ Manage Saved Connections", use_container_width=True):
         manage_connections_dialog()
     
     st.write("")
     
-    # Display connections grouped by environment
-    if grouped_connections:
-        for env, connections in sorted(grouped_connections.items()):
+    display_connections = storage.get_connections_by_environment()
+    
+    if display_connections:
+        # Define environment colors
+        env_colors = {
+            "Production": ("#fee2e2", "#991b1b"), # Red
+            "Staging": ("#ffedd5", "#9a3412"),   # Orange
+            "Development": ("#dcfce7", "#166534"), # Green
+            "QA": ("#e0e7ff", "#3730a3"),        # Indigo
+            "UAT": ("#f3e8ff", "#6b21a8")        # Purple
+        }
+
+        for env, connections in sorted(display_connections.items()):
+            bg, text_c = env_colors.get(env, ("#f1f5f9", "#475569"))
             with st.expander(f"🏷️ {env} ({len(connections)})", expanded=False):
                 for conn in connections:
                     st.markdown(f"""
-                        <div style='padding: 10px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);'>
-                            <div style='font-weight: 600; color: #1e293b; font-size: 0.9rem;'>{conn['name']}</div>
-                            <div style='color: #64748b; font-size: 0.75rem; font-family: monospace; margin-top: 2px;'>
-                                {conn['user']}@{conn['host']}<br>
-                                DB: {conn['dbname']}
+                        <div class='connection-card'>
+                            <div class='env-tag' style='background: {bg}; color: {text_c};'>{env}</div>
+                            <div style='font-weight: 700; color: #1e293b; font-size: 0.95rem; line-height: 1.2;'>{conn['name']}</div>
+                            <div style='color: #64748b; font-size: 0.7rem; font-family: monospace; margin-top: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;'>
+                                {conn['user']}@{conn['host']}
                             </div>
                         </div>
                     """, unsafe_allow_html=True)
@@ -611,27 +805,43 @@ def step_4_execute():
         
     # --- Step 4: Execution Confirmation ---
     st.markdown("#### 📋 Migration Summary")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown(f"""
-            <div style='padding: 15px; background: #f1f5f9; border-radius: 10px; border-left: 5px solid #667eea;'>
-                <small style='text-transform: uppercase; color: #64748b; font-weight: 700; font-size: 0.7rem;'>Source Database</small><br>
-                <div style='color: #1e293b; font-weight: 600;'>{st.session_state.source_conf.get('host')}</div>
-                <div style='color: #64748b; font-size: 0.8rem;'>DB: {st.session_state.source_conf.get('dbname')}</div>
-            </div>
-        """, unsafe_allow_html=True)
-    with c2:
-        st.markdown(f"""
-            <div style='padding: 15px; background: #fff7ed; border-radius: 10px; border-left: 5px solid #f97316;'>
-                <small style='text-transform: uppercase; color: #9a3412; font-weight: 700; font-size: 0.7rem;'>Target Database</small><br>
-                <div style='color: #1e293b; font-weight: 600;'>{st.session_state.target_conf.get('host')}</div>
-                <div style='color: #9a3412; font-size: 0.8rem;'>DB: {st.session_state.target_conf.get('dbname')}</div>
-            </div>
-        """, unsafe_allow_html=True)
+    with st.container(border=True):
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown(f"""
+                <div style='padding: 15px; background: #eff6ff; border-radius: 12px; border-left: 4px solid #2563eb;'>
+                    <small style='text-transform: uppercase; color: #1e40af; font-weight: 800; font-size: 0.7rem; letter-spacing: 0.5px;'>SOURCE</small><br>
+                    <div style='color: #1e293b; font-weight: 700; margin-top: 4px;'>{st.session_state.source_conf.get('host')}</div>
+                    <div style='color: #64748b; font-size: 0.8rem;'>Database: <b>{st.session_state.source_conf.get('dbname')}</b></div>
+                </div>
+            """, unsafe_allow_html=True)
+        with c2:
+            st.markdown(f"""
+                <div style='padding: 15px; background: #fff7ed; border-radius: 12px; border-left: 4px solid #f97316;'>
+                    <small style='text-transform: uppercase; color: #9a3412; font-weight: 800; font-size: 0.7rem; letter-spacing: 0.5px;'>TARGET</small><br>
+                    <div style='color: #1e293b; font-weight: 700; margin-top: 4px;'>{st.session_state.target_conf.get('host')}</div>
+                    <div style='color: #9a3412; font-size: 0.8rem;'>Database: <b>{st.session_state.target_conf.get('dbname')}</b></div>
+                </div>
+            """, unsafe_allow_html=True)
+
+    st.write("")
+    
+    # Final Destruction Confirmation
+    st.markdown("#### 🚨 Safety Authorization")
+    st.markdown("""
+        <div class="danger-box">
+            <b>CRITICAL WARNING:</b> All existing data in the public schema of the <u>target</u> database will be <b>destroyed</b>.
+        </div>
+    """, unsafe_allow_html=True)
+    
+    confirm_destruction = st.checkbox(
+        f"I confirm that I want to drop all tables in '{st.session_state.target_conf.get('dbname')}' and restore the source data.",
+        key="final_confirm_check"
+    )
 
     if can_proceed:
         st.write("")
-        if st.button("Start Migration Now", type="primary"):
+        if st.button("🚀 Start Migration Now", type="primary", disabled=not confirm_destruction):
             st.session_state.logs = []
             
             # Create a placeholder for live logs
