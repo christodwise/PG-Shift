@@ -9,12 +9,9 @@ def get_conn_string(conn_details):
 
 def run_command(cmd, env, log_callback):
     """Runs a shell command and streams stdout/stderr to the log callback."""
-    # Mask password in logs
-    masked_cmd = " ".join(cmd)
-    if 'PGPASSWORD' in env:
-         pass # Environment variables are not printed in the command string usually, but be careful
-    
-    log_callback(f"Running: {masked_cmd}")
+    masked_cmd = " ".join([c if i != 0 or 'PGPASSWORD' not in env else '****' for i, c in enumerate(cmd)])
+    # Simplified masking for now as PGPASSWORD is in env, not cmd
+    log_callback(f"Executing: {' '.join(cmd[:1])} ...") 
     
     process = subprocess.Popen(
         cmd,
@@ -22,15 +19,18 @@ def run_command(cmd, env, log_callback):
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
-        bufsize=1
+        bufsize=1,
+        universal_newlines=True
     )
     
-    for line in process.stdout:
-        log_callback(line.strip())
-        
-    process.wait()
-    if process.returncode != 0:
-        raise Exception(f"Command failed with exit code {process.returncode}")
+    for line in iter(process.stdout.readline, ""):
+        if line:
+            log_callback(line.strip())
+            
+    process.stdout.close()
+    return_code = process.wait()
+    if return_code != 0:
+        raise Exception(f"Command failed with exit code {return_code}")
 
 def drop_public_tables(target_conn_details, log_callback):
     log_callback("Connecting to target to drop tables...")
@@ -68,18 +68,21 @@ def drop_public_tables(target_conn_details, log_callback):
         raise e
 
 def run_migration(source, target, log_callback, schema_only=False):
-    dump_file = tempfile.mktemp(suffix=".dump")
-    
+    # Use NamedTemporaryFile for better lifecycle management
+    with tempfile.NamedTemporaryFile(suffix=".dump", delete=False) as tmp_file:
+        dump_file = tmp_file.name
+
     try:
         # 1. pg_dump from Source
         mode_str = "Schema Only" if schema_only else "Full (Schema + Data)"
-        log_callback(f"Starting dump ({mode_str}) from {source['host']}:{source['port']}/{source['dbname']}...")
+        log_callback(f"PHASE:DUMPING|Starting dump ({mode_str}) from {source['host']}...")
         
         env_source = os.environ.copy()
         env_source['PGPASSWORD'] = source['password']
         
         dump_cmd = [
             'pg_dump',
+            '-v', # Verbose for better logging
             '-h', source['host'],
             '-p', source['port'],
             '-U', source['user'],
@@ -89,23 +92,24 @@ def run_migration(source, target, log_callback, schema_only=False):
         ]
         
         if schema_only:
-            dump_cmd.insert(5, '-s') # Add -s before -Fc or anywhere valid
+            dump_cmd.insert(5, '-s')
 
-        
         run_command(dump_cmd, env_source, log_callback)
-        log_callback("Dump completed.")
+        log_callback("Dump completed successfully.")
         
         # 2. Drop tables on Target
+        log_callback("PHASE:DROPPING|Preparing target database (dropping existing tables)...")
         drop_public_tables(target, log_callback)
         
         # 3. pg_restore to Target
-        log_callback(f"Starting restore to {target['host']}:{target['port']}/{target['dbname']}...")
+        log_callback(f"PHASE:RESTORING|Starting restore to {target['host']}...")
         
         env_target = os.environ.copy()
         env_target['PGPASSWORD'] = target['password']
         
         restore_cmd = [
             'pg_restore',
+            '-v', # Verbose
             '-h', target['host'],
             '-p', target['port'],
             '-U', target['user'],
@@ -116,15 +120,18 @@ def run_migration(source, target, log_callback, schema_only=False):
         run_command(restore_cmd, env_target, log_callback)
         log_callback("Restore completed successfully.")
         
-        return True, "Migration successful"
+        return True, "Migration completed successfully!"
         
     except Exception as e:
-        log_callback(f"Migration Failed: {str(e)}")
+        log_callback(f"ERROR: Migration Failed - {str(e)}")
         return False, str(e)
     finally:
         if os.path.exists(dump_file):
-            os.remove(dump_file)
-            log_callback("Cleaned up temporary dump file.")
+            try:
+                os.remove(dump_file)
+                log_callback("Cleaned up temporary resources.")
+            except:
+                pass
 
 def test_connection(conn_details):
     """Tests connection and returns Postgres version string."""

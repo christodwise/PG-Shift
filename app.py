@@ -611,19 +611,38 @@ def step_4_execute():
         st.markdown("#### 🚦 Ready to Migrate")
         if st.button("Start Migration Now", type="primary"):
             st.session_state.logs = []
-            log_container = st.container()
-            status_box = st.empty()
+            
+            # Create a placeholder for live logs
+            log_display = st.empty()
             
             def log_callback(msg):
-                st.session_state.logs.append(msg)
+                # Handle phase updates
+                if msg.startswith("PHASE:"):
+                    phase_info = msg.split("|")
+                    phase_name = phase_info[0].replace("PHASE:", "").title()
+                    phase_detail = phase_info[1] if len(phase_info) > 1 else ""
+                    st.session_state.current_phase = phase_name
+                    st.session_state.logs.append(f"--- {phase_name}: {phase_detail} ---")
+                else:
+                    st.session_state.logs.append(msg)
+                
+                # Update live log view
+                with log_display:
+                    # Show last 15 lines of logs for brevity during execution
+                    visible_logs = st.session_state.logs[-15:]
+                    st.code("\n".join(visible_logs))
+                    
                 # Structured log for Agents
                 try:
-                    # simplistic structured log wrapper
                     structured = json.dumps({"timestamp": time.time(), "message": msg})
                     print(structured) 
                 except: pass
                 
+            st.session_state.current_phase = "Initializing"
+            
             with st.status("Executing Migration...", expanded=True) as status:
+                # Update status label dynamically
+                status.update(label=f"Migration: {st.session_state.get('current_phase', 'Starting')}...")
                 
                 success, msg = migration.run_migration(
                     st.session_state.source_conf, 
@@ -633,7 +652,7 @@ def step_4_execute():
                 )
                 
                 if success:
-                    status.update(label="Done!", state="complete", expanded=False)
+                    status.update(label="Migration Complete!", state="complete", expanded=False)
                     if lottie_success:
                         st_lottie(lottie_success, height=150, key="success_anim")
                     else:
@@ -642,7 +661,7 @@ def step_4_execute():
                     st.markdown("""
                         <div class="success-box">
                             <b>Migration Successful!</b><br>
-                            Check logs below for details.
+                            The source database has been successfully migrated to the target.
                         </div>
                     """, unsafe_allow_html=True)
                     
@@ -653,8 +672,8 @@ def step_4_execute():
                         st.session_state.logs = []
                         st.rerun()
                 else:
-                    status.update(label="Failed", state="error", expanded=True)
-                    st.error(msg)
+                    status.update(label="Migration Failed", state="error", expanded=True)
+                    st.error(f"❌ {msg}")
                     
                     # Back to Home button for failed migrations too
                     st.write("")
@@ -663,7 +682,7 @@ def step_4_execute():
                         st.session_state.logs = []
                         st.rerun()
             
-            with st.expander("View Logs"):
+            with st.expander("View Full Migration Logs", expanded=False):
                 st.code("\n".join(st.session_state.logs))
     
     if st.button("⬅ Back"):
