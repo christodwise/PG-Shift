@@ -402,20 +402,41 @@ def step_2_source():
     st.markdown("### 🔒 Source Database")
     st.caption("Read-only connection. We will analyze this source first.")
     
-    connections = storage.get_connections()
-    load_conn = st.selectbox("Load Saved Connection", ["Select..."] + [c['name'] for c in connections], key="src_load_select")
+    # Two-step selection: Environment -> Database
+    st.markdown("#### 📂 Load Saved Connection")
+    col_env, col_db = st.columns(2)
     
     saved_data = {}
-    if load_conn != "Select...":
-        for c in connections:
-            if c['name'] == load_conn:
-                saved_data = c
-                break
+    grouped_connections = storage.get_connections_by_environment()
+    
+    with col_env:
+        if grouped_connections:
+            env_options = ["-- Select Environment --"] + sorted(list(grouped_connections.keys()))
+            selected_env = st.selectbox("1️⃣ Environment", env_options, key="src_env_select")
+        else:
+            st.info("No saved connections")
+            selected_env = None
+    
+    with col_db:
+        if selected_env and selected_env != "-- Select Environment --":
+            conns_in_env = grouped_connections.get(selected_env, [])
+            conn_options = ["-- Select Database --"] + [c['name'] for c in conns_in_env]
+            selected_conn_name = st.selectbox("2️⃣ Database", conn_options, key="src_db_select")
+            
+            if selected_conn_name and selected_conn_name != "-- Select Database --":
+                saved_data = next((c for c in conns_in_env if c['name'] == selected_conn_name), {})
+                if saved_data:
+                    st.success(f"✅ Loaded: {selected_conn_name} ({selected_env})")
+        else:
+            st.selectbox("2️⃣ Database", ["-- Select Environment First --"], disabled=True, key="src_db_select_placeholder")
+    
+    st.write("")
     
     # Pre-fill from session or saved
     defaults = st.session_state.source_conf if st.session_state.source_conf else saved_data
     
     # Connection Form
+    st.markdown("#### 🔐 Connection Details")
     with st.container():
         c1, c2 = st.columns(2)
         host = c1.text_input("Host", value=defaults.get('host', 'localhost'), key="src_host")
@@ -487,18 +508,39 @@ def step_3_target():
         </div>
     """, unsafe_allow_html=True)
     
-    connections = storage.get_connections()
-    load_conn = st.selectbox("Load Saved Connection (Target)", ["Select..."] + [c['name'] for c in connections], key="tgt_load_select")
+    # Two-step selection: Environment -> Database
+    st.markdown("#### 📂 Load Saved Connection")
+    col_env, col_db = st.columns(2)
     
     saved_data = {}
-    if load_conn != "Select...":
-        for c in connections:
-            if c['name'] == load_conn:
-                saved_data = c
-                break
+    grouped_connections = storage.get_connections_by_environment()
+    
+    with col_env:
+        if grouped_connections:
+            env_options = ["-- Select Environment --"] + sorted(list(grouped_connections.keys()))
+            selected_env = st.selectbox("1️⃣ Environment", env_options, key="tgt_env_select")
+        else:
+            st.info("No saved connections")
+            selected_env = None
+    
+    with col_db:
+        if selected_env and selected_env != "-- Select Environment --":
+            conns_in_env = grouped_connections.get(selected_env, [])
+            conn_options = ["-- Select Database --"] + [c['name'] for c in conns_in_env]
+            selected_conn_name = st.selectbox("2️⃣ Database", conn_options, key="tgt_db_select")
+            
+            if selected_conn_name and selected_conn_name != "-- Select Database --":
+                saved_data = next((c for c in conns_in_env if c['name'] == selected_conn_name), {})
+                if saved_data:
+                    st.success(f"✅ Loaded: {selected_conn_name} ({selected_env})")
+        else:
+            st.selectbox("2️⃣ Database", ["-- Select Environment First --"], disabled=True, key="tgt_db_select_placeholder")
+    
+    st.write("")
                 
     defaults = st.session_state.target_conf if st.session_state.target_conf else saved_data
 
+    st.markdown("#### 🔐 Connection Details")
     with st.container():
         c1, c2 = st.columns(2)
         host = c1.text_input("Host", value=defaults.get('host', 'localhost'), key="tgt_host")
