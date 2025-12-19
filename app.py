@@ -156,7 +156,8 @@ def manage_connections_dialog():
     for c in conns:
         c1, c2 = st.columns([3, 1])
         with c1:
-            st.markdown(f"**{c['name']}**")
+            env_label = c.get('environment', 'Production')
+            st.markdown(f"**{c['name']}** 🏷️ _{env_label}_")
             st.caption(f"{c['user']}@{c['host']}:{c['port']}/{c['dbname']}")
         with c2:
             if st.button("🗑️", key=f"del_{c['id']}", help="Delete this connection"):
@@ -168,11 +169,28 @@ with st.sidebar:
     if lottie_db_anim:
         st_lottie(lottie_db_anim, height=150, key="sidebar_anim")
     st.header("📂 Saved Connections")
-    connections = storage.get_connections()
-    st.caption(f"Found {len(connections)} profiles.")
+    
+    # Get connections grouped by environment
+    grouped_connections = storage.get_connections_by_environment()
+    total_count = sum(len(conns) for conns in grouped_connections.values())
+    st.caption(f"Found {total_count} profiles across {len(grouped_connections)} environments")
     
     if st.button("Manage / Delete Connections", use_container_width=True):
         manage_connections_dialog()
+    
+    st.write("")
+    
+    # Display connections grouped by environment
+    if grouped_connections:
+        for env, connections in sorted(grouped_connections.items()):
+            with st.expander(f"🏷️ {env} ({len(connections)})", expanded=True):
+                for conn in connections:
+                    st.markdown(f"""
+                        <div style='padding: 8px; background: #f8f9fa; border-radius: 6px; margin-bottom: 8px;'>
+                            <b>{conn['name']}</b><br>
+                            <small style='color: #6c757d;'>{conn['user']}@{conn['host']}:{conn['port']}/{conn['dbname']}</small>
+                        </div>
+                    """, unsafe_allow_html=True)
 
 
 
@@ -430,11 +448,12 @@ def step_2_source():
     with col_save:
         with st.popover("💾 Save Connection"):
             save_name = st.text_input("Save as:", placeholder="e.g. Prod DB", key="src_save_name")
+            save_env = st.selectbox("Environment", ["Production", "Staging", "Development", "QA", "UAT"], key="src_save_env")
             if st.button("Save", key="src_save_btn"):
                 if save_name:
-                    success, msg = storage.save_connection(save_name, host, port, user, password, dbname)
+                    success, msg = storage.save_connection(save_name, host, port, user, password, dbname, save_env)
                     if success:
-                        st.toast(f"Saved '{save_name}' successfully!", icon="✅")
+                        st.toast(f"Saved '{save_name}' ({save_env}) successfully!", icon="✅")
                         time.sleep(1)
                         st.rerun()
                     else:
@@ -493,11 +512,12 @@ def step_3_target():
     with st.expander("💾 Save this connection details"):
         c_save_1, c_save_2 = st.columns([3, 1])
         save_name = c_save_1.text_input("Save as:", placeholder="e.g. Staging DB", key="tgt_save_name")
+        save_env = c_save_1.selectbox("Environment", ["Production", "Staging", "Development", "QA", "UAT"], key="tgt_save_env")
         if c_save_2.button("Save", key="tgt_save_btn"):
              if save_name:
-                success, msg = storage.save_connection(save_name, host, port, user, password, dbname)
+                success, msg = storage.save_connection(save_name, host, port, user, password, dbname, save_env)
                 if success:
-                    st.toast(f"Saved successfully!", icon="✅")
+                    st.toast(f"Saved '{save_name}' ({save_env}) successfully!", icon="✅")
                     time.sleep(1)
                     st.rerun()
                 else:

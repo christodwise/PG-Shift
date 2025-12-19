@@ -11,10 +11,13 @@ DB_FILE = os.path.join(DATA_DIR, 'connections.db')
 def init_db():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
+    
+    # Create table with environment field
     c.execute('''
         CREATE TABLE IF NOT EXISTS connections (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL UNIQUE,
+            environment TEXT NOT NULL DEFAULT 'Production',
             host TEXT NOT NULL,
             port TEXT NOT NULL,
             user TEXT NOT NULL,
@@ -22,17 +25,26 @@ def init_db():
             dbname TEXT NOT NULL
         )
     ''')
+    
+    # Migration: Add environment column to existing databases
+    try:
+        c.execute("ALTER TABLE connections ADD COLUMN environment TEXT NOT NULL DEFAULT 'Production'")
+        conn.commit()
+    except sqlite3.OperationalError:
+        # Column already exists
+        pass
+    
     conn.commit()
     conn.close()
 
-def save_connection(name, host, port, user, password, dbname):
+def save_connection(name, host, port, user, password, dbname, environment='Production'):
     try:
         conn = sqlite3.connect(DB_FILE)
         c = conn.cursor()
         c.execute('''
-            INSERT INTO connections (name, host, port, user, password, dbname)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (name, host, port, user, password, dbname))
+            INSERT INTO connections (name, environment, host, port, user, password, dbname)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (name, environment, host, port, user, password, dbname))
         conn.commit()
         return True, "Saved successfully"
     except sqlite3.IntegrityError:
@@ -46,10 +58,21 @@ def get_connections():
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
-    c.execute('SELECT * FROM connections')
+    c.execute('SELECT * FROM connections ORDER BY environment, name')
     rows = c.fetchall()
     conn.close()
     return [dict(row) for row in rows]
+
+def get_connections_by_environment():
+    """Get connections grouped by environment"""
+    connections = get_connections()
+    grouped = {}
+    for conn in connections:
+        env = conn.get('environment', 'Production')
+        if env not in grouped:
+            grouped[env] = []
+        grouped[env].append(conn)
+    return grouped
 
 def delete_connection(conn_id):
     conn = sqlite3.connect(DB_FILE)
